@@ -28,7 +28,6 @@ resource "aws_subnet" "default" {
   map_public_ip_on_launch = true
 }
 
-
 # Our default security group to access
 # the instances over SSH and HTTP
 resource "aws_security_group" "default" {
@@ -61,11 +60,13 @@ resource "aws_security_group" "default" {
   }
 }
 
+# this allows you to log in usign the pub key in your ssh profile.
 resource "aws_key_pair" "auth" {
   key_name   = "${var.key_name}"
   public_key = "${file(var.public_key_path)}"
 }
 
+# we need to allow the individual server to pull from s3 to get the latest release
 resource "aws_iam_role_policy" "web_policy" {
   name = "web_policy"
   role = "${aws_iam_role.web_role.id}"
@@ -110,7 +111,6 @@ resource "aws_iam_role" "web_role" {
   ]
 }
 EOF
-
 }
 
 resource "aws_iam_instance_profile" "web_instance_profile" {            
@@ -124,10 +124,8 @@ resource "aws_instance" "web" {
   connection {
     # The default username for our AMI
     user = "ubuntu"
-
     # The connection will use the local SSH agent for authentication.
   }
-
   instance_type = "t2.small"
 
   # Lookup the correct AMI based on the region
